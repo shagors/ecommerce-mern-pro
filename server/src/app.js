@@ -4,9 +4,11 @@ const bodyParser = require("body-parser");
 const createError = require("http-errors");
 const xssClean = require("xss-clean");
 const rateLimit = require("express-rate-limit");
+const userRouter = require("./routers/userRouter");
 
 const app = express();
 
+// set user limit request per minuits
 const rateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 5,
@@ -21,17 +23,8 @@ app.use(bodyParser.json());
 app.use(xssClean());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/test", (req, res) => {
-  res.status(200).send({
-    message: "api test is working fine",
-  });
-});
-
-app.get("/api/users", (req, res) => {
-  res.status(200).send({
-    message: "api test is working fine",
-  });
-});
+// routers
+app.use("/api/users", userRouter);
 
 // client error message
 app.use((req, res, next) => {
