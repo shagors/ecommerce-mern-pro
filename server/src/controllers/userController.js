@@ -2,7 +2,8 @@ const createError = require("http-errors");
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
 const { findWithId } = require("../services/findItem");
-const fs = require("fs");
+const { deleteImage } = require("../helper/deleteImage");
+const fs = require("fs").promises;
 
 // get all users
 const getUsers = async (req, res, next) => {
@@ -49,11 +50,11 @@ const getUsers = async (req, res, next) => {
 };
 
 // get single user by id
-const getUser = async (req, res, next) => {
+const getUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
-    const user = await findWithId(id, options);
+    const user = await findWithId(User, id, options);
 
     return successResponse(res, {
       statusCode: 200,
@@ -66,23 +67,15 @@ const getUser = async (req, res, next) => {
 };
 
 // delete single user by id
-const deleteUser = async (req, res, next) => {
+const deleteUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
-    const user = await findWithId(id, options);
+    const user = await findWithId(User, id, options);
 
     const userImagePath = user.image;
-    fs.access(userImagePath, (err) => {
-      if (err) {
-        console.error("User image not found");
-      } else {
-        fs.unlink(userImagePath, (err) => {
-          if (err) throw err;
-          console.log("User image deleted!!");
-        });
-      }
-    });
+
+    deleteImage(userImagePath);
 
     await User.findByIdAndDelete({
       _id: id,
@@ -98,8 +91,38 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+// user registration API make
+const processRegister = async (req, res, next) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+
+    const userExists = await User.exists({ email: email });
+    if (userExists) {
+      // 409 error means for check same email exists or not
+      throw createError(409, "This email is already registered. Please Login");
+    }
+
+    const newUser = {
+      name,
+      email,
+      password,
+      phone,
+      address,
+    };
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User Created successfully",
+      payload: { newUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
-  getUser,
-  deleteUser,
+  getUserById,
+  deleteUserById,
+  processRegister,
 };
