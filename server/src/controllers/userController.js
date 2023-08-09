@@ -1,6 +1,7 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
 const { successResponse } = require("./responseController");
+const { findUserById } = require("../services/findUser");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -45,6 +46,23 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+const getUser = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const user = await findUserById(id);
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User were return successfully",
+      payload: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
+  getUser,
 };
