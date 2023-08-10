@@ -5,6 +5,7 @@ const { findWithId } = require("../services/findItem");
 const { deleteImage } = require("../helper/deleteImage");
 const { createJSONWebToken } = require("../helper/jasonwebtoken");
 const { jwtActivationKey, clientUrl } = require("../secret");
+const emailWithNodeMailer = require("../helper/email");
 const fs = require("fs").promises;
 
 // get all users
@@ -104,7 +105,7 @@ const processRegister = async (req, res, next) => {
       throw createError(409, "This email is already registered. Please Login");
     }
 
-    // jwt call
+    // jwt call for new user
     const token = createJSONWebToken(
       { name, email, password, phone, address },
       jwtActivationKey,
@@ -121,9 +122,18 @@ const processRegister = async (req, res, next) => {
       `,
     };
 
+    // send email with nodemailer
+    try {
+      await emailWithNodeMailer(emailData);
+    } catch (emailError) {
+      next(createError(500, "Failed to send verification email!!"));
+      return;
+    }
+
+    // when get user then send success token send to browser for check valid user or not
     return successResponse(res, {
       statusCode: 200,
-      message: "User Created successfully",
+      message: `Please go to your ${email} for completing the registration process.`,
       payload: { token },
     });
   } catch (error) {
