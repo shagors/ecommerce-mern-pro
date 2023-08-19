@@ -3,10 +3,9 @@ const { smtpUserName, smtpUserPassword } = require("../secret");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
+  port: 587,
   secure: false,
   auth: {
-    // TODO: replace `user` and `pass` values from <https://forwardemail.net>
     user: smtpUserName,
     pass: smtpUserPassword,
   },
