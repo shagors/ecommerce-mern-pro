@@ -36,7 +36,14 @@ const validateUserRegistration = [
     .withMessage("Phone Number is required!!")
     .isLength({ min: 11 })
     .withMessage("Phone should be 11 characters long!!"),
-  body("image").optional().isString().withMessage("Address is required!!"),
+  body("image")
+    .custom((value, { req }) => {
+      if (!req.file || !req.file.buffer) {
+        throw new Error("User image is required");
+      }
+      return true;
+    })
+    .withMessage("User image is required"),
 ];
 
 module.exports = { validateUserRegistration };

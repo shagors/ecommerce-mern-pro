@@ -100,6 +100,11 @@ const processRegister = async (req, res, next) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
+    if (!req.file) {
+    }
+
+    const imageBufferString = req.file.buffer.toString("base64");
+
     const userExists = await User.exists({ email: email });
     if (userExists) {
       // 409 error means for check same email exists or not
@@ -108,7 +113,7 @@ const processRegister = async (req, res, next) => {
 
     // jwt call for new user
     const token = createJSONWebToken(
-      { name, email, password, phone, address },
+      { name, email, password, phone, address, image: imageBufferString },
       jwtActivationKey,
       "10m"
     );
