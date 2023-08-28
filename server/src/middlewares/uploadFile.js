@@ -21,6 +21,7 @@ const { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } = require("../config");
 //   }
 //   cb(null, true);
 // };
+
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -37,7 +38,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage,
+  storage,
   fileFilter,
 });
 
