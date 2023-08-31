@@ -28,8 +28,12 @@ const handleLogin = async (req, res, next) => {
       throw createError(403, "You are Banned. Please contact our help center!");
     }
     //   token,cookies
-    const accessToken = createJSONWebToken({ email }, jwtAccessKey, "10m");
-    res.cookie("access_token", accessToken, {
+    const accessToken = createJSONWebToken(
+      { _id: user._id },
+      jwtAccessKey,
+      "10m"
+    );
+    res.cookie("accessToken", accessToken, {
       maxAge: 15 * 60 * 1000, // 15 minutes validate token
       httpOnly: true,
       secure: true,
@@ -39,6 +43,20 @@ const handleLogin = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 200,
       message: "User Login Successfully",
+      payload: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleLogout = async (req, res, next) => {
+  try {
+    res.clearCookie("accessToken");
+    //   success user found with email address
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User Logout Successfully",
       payload: {},
     });
   } catch (error) {
@@ -46,4 +64,4 @@ const handleLogin = async (req, res, next) => {
   }
 };
 
-module.exports = { handleLogin };
+module.exports = { handleLogin, handleLogout };
