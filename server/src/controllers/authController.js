@@ -28,11 +28,7 @@ const handleLogin = async (req, res, next) => {
       throw createError(403, "You are Banned. Please contact our help center!");
     }
     //   token,cookies
-    const accessToken = createJSONWebToken(
-      { _id: user._id },
-      jwtAccessKey,
-      "10m"
-    );
+    const accessToken = createJSONWebToken({ user }, jwtAccessKey, "15m");
     res.cookie("accessToken", accessToken, {
       maxAge: 15 * 60 * 1000, // 15 minutes validate token
       httpOnly: true,
