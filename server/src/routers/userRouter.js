@@ -1,16 +1,16 @@
 const express = require("express");
 const {
-  getUsers,
-  getUserById,
-  deleteUserById,
-  processRegister,
-  activateUserAccount,
-  updateUserById,
   handleBanUserById,
   handleUnBanUserById,
   handleUpdatePassword,
   handleForgetPassword,
   handleResetPassword,
+  handleProcessRegister,
+  handleActivateUserAccount,
+  handleGetUsers,
+  handleGetUserById,
+  handleDeleteUserById,
+  handleUpdateUserById,
 } = require("../controllers/userController");
 const upload = require("../middlewares/uploadFile");
 const {
@@ -29,19 +29,27 @@ userRouter.post(
   isLoggedOut,
   validateUserRegistration,
   runValidation,
-  processRegister
+  handleProcessRegister
 );
-userRouter.post("/activate", isLoggedOut, activateUserAccount);
-userRouter.get("/", isLoggedIn, isAdmin, getUsers);
-userRouter.get("/:id", isLoggedIn, getUserById);
-userRouter.delete("/:id", isLoggedIn, deleteUserById);
+userRouter.post("/activate", isLoggedOut, handleActivateUserAccount);
+userRouter.get("/", isLoggedIn, isAdmin, handleGetUsers);
+// normal way get user id
+userRouter.get("/:id", isLoggedIn, handleGetUserById);
+// moongoose id validate with this REGEX and this way get valid ID
+// userRouter.get("/:id([0-9a-fA-F]{24})", isLoggedIn, getUserById);
+userRouter.delete("/:id", isLoggedIn, handleDeleteUserById);
 userRouter.put(
   "/reset-password",
   validateUserResetPassword,
   runValidation,
   handleResetPassword
 );
-userRouter.put("/:id", upload.single("image"), isLoggedIn, updateUserById);
+userRouter.put(
+  "/:id",
+  upload.single("image"),
+  isLoggedIn,
+  handleUpdateUserById
+);
 userRouter.put("/ban-user/:id", isLoggedIn, isAdmin, handleBanUserById);
 userRouter.put("/unban-user/:id", isLoggedIn, isAdmin, handleUnBanUserById);
 userRouter.put(

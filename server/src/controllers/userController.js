@@ -12,10 +12,12 @@ const {
 const emailWithNodeMailer = require("../helper/email");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const checkUserExits = require("../helper/checkUserExits");
+const sendEmail = require("../helper/sendEmail");
 const fs = require("fs").promises;
 
 // get all users
-const getUsers = async (req, res, next) => {
+const handleGetUsers = async (req, res, next) => {
   try {
     const search = req.query.search || "";
     const page = Number(req.query.page) || 1;
@@ -38,7 +40,7 @@ const getUsers = async (req, res, next) => {
 
     const count = await User.find(filter).countDocuments();
 
-    if (!users) throw createError(404, "No users found");
+    if (!users || users.length === 0) throw createError(404, "No users found");
 
     return successResponse(res, {
       statusCode: 200,
@@ -59,7 +61,7 @@ const getUsers = async (req, res, next) => {
 };
 
 // get single user by id
-const getUserById = async (req, res, next) => {
+const handleGetUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
@@ -76,11 +78,11 @@ const getUserById = async (req, res, next) => {
 };
 
 // delete single user by id
-const deleteUserById = async (req, res, next) => {
+const handleDeleteUserById = async (req, res, next) => {
   try {
     const id = req.params.id;
     const options = { password: 0 };
-    const user = await findWithId(User, id, options);
+    await findWithId(User, id, options);
 
     await User.findByIdAndDelete({
       _id: id,
@@ -97,7 +99,7 @@ const deleteUserById = async (req, res, next) => {
 };
 
 // user registration API make
-const processRegister = async (req, res, next) => {
+const handleProcessRegister = async (req, res, next) => {
   try {
     const { name, email, password, phone, address } = req.body;
 
@@ -112,7 +114,7 @@ const processRegister = async (req, res, next) => {
 
     const imageBufferString = image.buffer.toString("base64");
 
-    const userExists = await User.exists({ email: email });
+    const userExists = await checkUserExits(email);
     if (userExists) {
       // 409 error means for check same email exists or not
       throw createError(409, "This email is already registered. Please Login");
@@ -136,18 +138,12 @@ const processRegister = async (req, res, next) => {
     };
 
     // send email with nodemailer
-    try {
-      await emailWithNodeMailer(emailData);
-    } catch (emailError) {
-      next(createError(500, "Failed to send verification email!!"));
-      return;
-    }
+    sendEmail(emailData);
 
     // when get user then send success token send to browser for check valid user or not
     return successResponse(res, {
       statusCode: 200,
       message: `Please go to your ${email} for completing the registration process.`,
-      payload: { token, imageBufferString },
     });
   } catch (error) {
     next(error);
@@ -155,7 +151,7 @@ const processRegister = async (req, res, next) => {
 };
 
 //verify user with token is user valid or not or exists
-const activateUserAccount = async (req, res, next) => {
+const handleActivateUserAccount = async (req, res, next) => {
   try {
     const token = req.body.token;
     if (!token) throw createError(404, "Token not found!!");
@@ -194,7 +190,7 @@ const activateUserAccount = async (req, res, next) => {
 };
 
 // delete single user by id
-const updateUserById = async (req, res, next) => {
+const handleUpdateUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const options = { password: 0 };
@@ -202,11 +198,12 @@ const updateUserById = async (req, res, next) => {
     const updateOptions = { new: true, runValidators: true, context: "query" };
     let updates = {};
 
-    for (let key in req.body) {
-      if (["name", "password", "phone", "address"].includes(key)) {
+    const allowedFields = ["name", "password", "phone", "address"];
+    for (const key in req.body) {
+      if (allowedFields.includes(key)) {
         updates[key] = req.body[key];
-      } else if (["email"].includes(key)) {
-        throw new Error("Email can't be updated!");
+      } else if (key === "email") {
+        throw createError(400, "Email can't be updated!");
       }
     }
 
@@ -306,10 +303,9 @@ const handleUpdatePassword = async (req, res, next) => {
     //  compare the password
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isPasswordMatch) {
-      throw createError(401, "Old Password didn't match!!");
+      throw createError(401, "Old Password is incorrect!!");
     }
 
-    const filter = { userId };
     const updates = { $set: { password: newPassword } };
     const updateOptions = { new: true };
 
@@ -359,12 +355,7 @@ const handleForgetPassword = async (req, res, next) => {
     };
 
     // send email with nodemailer
-    try {
-      await emailWithNodeMailer(emailData);
-    } catch (emailError) {
-      next(createError(500, "Failed to send Reset Password email!!"));
-      return;
-    }
+    sendEmail(emailData);
 
     return successResponse(res, {
       statusCode: 200,
@@ -409,12 +400,12 @@ const handleResetPassword = async (req, res, next) => {
 };
 
 module.exports = {
-  getUsers,
-  getUserById,
-  deleteUserById,
-  processRegister,
-  activateUserAccount,
-  updateUserById,
+  handleGetUsers,
+  handleGetUserById,
+  handleDeleteUserById,
+  handleProcessRegister,
+  handleActivateUserAccount,
+  handleUpdateUserById,
   handleBanUserById,
   handleUnBanUserById,
   handleUpdatePassword,
