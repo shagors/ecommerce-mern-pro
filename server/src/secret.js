@@ -10,6 +10,7 @@ const defaultImagePath =
 const jwtActivationKey = process.env.JWT_ACTIVATION_KEY || "123456anabia7890";
 
 const jwtAccessKey = process.env.JWT_ACCCESS_KEY || "123456anabia7890";
+const jwtRefreshKey = process.env.JWT_REFRESH_KEY || "123456anabia7890";
 const jwtPasswordResetKey =
   process.env.JWT_RESET_PASSWORD_KEY || "123456anabia7890";
 
@@ -27,4 +28,5 @@ module.exports = {
   clientUrl,
   jwtAccessKey,
   jwtPasswordResetKey,
+  jwtRefreshKey,
 };
