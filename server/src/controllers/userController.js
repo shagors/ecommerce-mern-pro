@@ -124,7 +124,7 @@ const handleProcessRegister = async (req, res, next) => {
     const token = createJSONWebToken(
       { name, email, password, phone, address, image: imageBufferString },
       jwtActivationKey,
-      "10m"
+      "15m"
     );
 
     // prepare email with nodemailer
@@ -342,7 +342,7 @@ const handleForgetPassword = async (req, res, next) => {
     }
 
     // jwt call for new user
-    const token = createJSONWebToken({ email }, jwtPasswordResetKey, "10m");
+    const token = createJSONWebToken({ email }, jwtPasswordResetKey, "15m");
 
     // prepare email with nodemailer
     const emailData = {
