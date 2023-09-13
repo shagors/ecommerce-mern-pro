@@ -6,6 +6,8 @@ const {
   handleCreateCategory,
   handleGetCategories,
   handleGetCategory,
+  handleUpdateCategory,
+  handleDeleteCategory,
 } = require("../controllers/categoryController");
 const categoryRouter = express.Router();
 
@@ -21,5 +23,16 @@ categoryRouter.post(
 // Get Category
 categoryRouter.get("/", handleGetCategories);
 categoryRouter.get("/:slug", handleGetCategory);
+// update category by slug
+categoryRouter.put(
+  "/:slug",
+  validateCategory,
+  runValidation,
+  isLoggedIn,
+  isAdmin,
+  handleUpdateCategory
+);
+// delete category by slug
+categoryRouter.delete("/:slug", isLoggedIn, isAdmin, handleDeleteCategory);
 
 module.exports = categoryRouter;
