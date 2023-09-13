@@ -2,10 +2,14 @@ const express = require("express");
 const runValidation = require("../validators");
 const { isLoggedIn, isLoggedOut, isAdmin } = require("../middlewares/auth");
 const { validateCategory } = require("../validators/category");
-const { handleCreateCategory } = require("../controllers/categoryController");
+const {
+  handleCreateCategory,
+  handleGetCategories,
+  handleGetCategory,
+} = require("../controllers/categoryController");
 const categoryRouter = express.Router();
 
-//
+// category making
 categoryRouter.post(
   "/",
   validateCategory,
@@ -14,5 +18,8 @@ categoryRouter.post(
   isAdmin,
   handleCreateCategory
 );
+// Get Category
+categoryRouter.get("/", handleGetCategories);
+categoryRouter.get("/:slug", handleGetCategory);
 
 module.exports = categoryRouter;
