@@ -30,8 +30,8 @@ const createProduct = async (productData) => {
   });
   return product;
 };
-const getAllProduct = async (page = 1, limit = 4) => {
-  const products = await Product.find({})
+const getAllProduct = async (page = 1, limit = 4, filter = {}) => {
+  const products = await Product.find(filter)
     .populate("category")
     .skip((page - 1) * limit) // set pagination
     .limit(limit) // page limit make
@@ -39,7 +39,7 @@ const getAllProduct = async (page = 1, limit = 4) => {
 
   if (!products) throw createError(404, "No products found!!");
 
-  const count = await Product.find({}).countDocuments();
+  const count = await Product.find(filter).countDocuments();
 
   return { products, count, totalPages: Math.ceil(count / limit) };
 };

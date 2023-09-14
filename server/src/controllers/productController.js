@@ -53,11 +53,21 @@ const handleCreateProduct = async (req, res, next) => {
 // All products Get  API make
 const handleGetProducts = async (req, res, next) => {
   try {
+    const search = req.query.search || "";
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 4;
 
+    // product search query
+    const searchRegExp = new RegExp(".*" + search + ".*", "i");
+    const filter = {
+      $or: [
+        { name: { $regex: searchRegExp } },
+        // { email: { $regex: searchRegExp } },
+      ],
+    };
+
     // find all products and set pagination for pages because products comes many. User don't want to show all products at a time
-    const productData = await getAllProduct(page, limit);
+    const productData = await getAllProduct(page, limit, filter);
 
     // when get user then send success token send to browser for check valid user or not
     return successResponse(res, {

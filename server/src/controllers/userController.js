@@ -23,6 +23,7 @@ const handleGetUsers = async (req, res, next) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 5;
 
+    // user search query add
     const searchRegExp = new RegExp(".*" + search + ".*", "i");
     const filter = {
       isAdmin: { $ne: true },
