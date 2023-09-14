@@ -60,9 +60,33 @@ const deleteSingleProduct = async (slug) => {
   return product;
 };
 
+const updateProductBySlug = async (slug, updates, image, updateOptions) => {
+  if (updates.name) {
+    updates.slug = slugify(updates.name);
+  }
+
+  if (image) {
+    if (image.size > 2 * 1024 * 1024) {
+      throw new Error("Image size is too large. Please select below 2 MB");
+    }
+    updates.image = image.buffer.toString("base64");
+  }
+  const updatedProduct = await Product.findOneAndUpdate(
+    { slug },
+    updates,
+    updateOptions
+  );
+
+  if (!updatedProduct) {
+    throw createError(404, "User ID doesn't exist!");
+  }
+  return updatedProduct;
+};
+
 module.exports = {
   createProduct,
   getAllProduct,
   getSingleProduct,
   deleteSingleProduct,
+  updateProductBySlug,
 };

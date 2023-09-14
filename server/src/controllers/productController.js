@@ -8,6 +8,7 @@ const {
   getAllProduct,
   getSingleProduct,
   deleteSingleProduct,
+  updateProductBySlug,
 } = require("../services/productService");
 
 // product create API make
@@ -110,9 +111,51 @@ const handleDeleteProduct = async (req, res, next) => {
   }
 };
 
+// update product
+const handleUpdateProductBySlug = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const updateOptions = { new: true, runValidators: true, context: "query" };
+    let updates = {};
+
+    const allowedFields = [
+      "name",
+      "description",
+      "price",
+      "sold",
+      "quantity",
+      "shipping",
+    ];
+
+    for (const key in req.body) {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    const image = req.file;
+
+    const updatedProduct = await updateProductBySlug(
+      slug,
+      updates,
+      image,
+      updateOptions
+    );
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Product Updated successfully",
+      payload: updatedProduct,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   handleCreateProduct,
   handleGetProducts,
   handleGetProduct,
   handleDeleteProduct,
+  handleUpdateProductBySlug,
 };
