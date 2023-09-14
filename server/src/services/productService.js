@@ -44,7 +44,25 @@ const getAllProduct = async (page = 1, limit = 4) => {
   return { products, count, totalPages: Math.ceil(count / limit) };
 };
 
+const getSingleProduct = async (slug) => {
+  const product = await Product.findOne({ slug }).populate("category");
+
+  if (!product) throw createError(404, "No products found!!");
+
+  return product;
+};
+
+const deleteSingleProduct = async (slug) => {
+  const product = await Product.findOneAndDelete({ slug });
+
+  if (!product) throw createError(404, "No products found!!");
+
+  return product;
+};
+
 module.exports = {
   createProduct,
   getAllProduct,
+  getSingleProduct,
+  deleteSingleProduct,
 };

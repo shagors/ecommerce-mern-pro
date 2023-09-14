@@ -3,7 +3,12 @@ const { successResponse } = require("./responseController");
 const { findWithId } = require("../services/findItem");
 const Product = require("../models/productModel");
 const slugify = require("slugify");
-const { createProduct, getAllProduct } = require("../services/productService");
+const {
+  createProduct,
+  getAllProduct,
+  getSingleProduct,
+  deleteSingleProduct,
+} = require("../services/productService");
 
 // product create API make
 const handleCreateProduct = async (req, res, next) => {
@@ -72,5 +77,42 @@ const handleGetProducts = async (req, res, next) => {
     next(error);
   }
 };
+// product Get  API make
+const handleGetProduct = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
 
-module.exports = { handleCreateProduct, handleGetProducts };
+    const product = await getSingleProduct(slug);
+    // when get user then send success token send to browser for check valid user or not
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Product returned successfully",
+      payload: product,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// product Delete  API make
+const handleDeleteProduct = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+
+    const product = await deleteSingleProduct(slug);
+    // when get user then send success token send to browser for check valid user or not
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  handleCreateProduct,
+  handleGetProducts,
+  handleGetProduct,
+  handleDeleteProduct,
+};
