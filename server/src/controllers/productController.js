@@ -3,7 +3,7 @@ const { successResponse } = require("./responseController");
 const { findWithId } = require("../services/findItem");
 const Product = require("../models/productModel");
 const slugify = require("slugify");
-const { createProduct } = require("../services/productService");
+const { createProduct, getAllProduct } = require("../services/productService");
 
 // product create API make
 const handleCreateProduct = async (req, res, next) => {
@@ -44,4 +44,33 @@ const handleCreateProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { handleCreateProduct };
+// All products Get  API make
+const handleGetProducts = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 4;
+
+    // find all products and set pagination for pages because products comes many. User don't want to show all products at a time
+    const productData = await getAllProduct(page, limit);
+
+    // when get user then send success token send to browser for check valid user or not
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Products returned successfully",
+      payload: {
+        products: productData.products,
+        pagination: {
+          totalPages: productData.totalPages,
+          currentPage: page,
+          previousPage: page - 1,
+          nextPage: page + 1,
+          totalNumberOfProducts: productData.count,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { handleCreateProduct, handleGetProducts };
